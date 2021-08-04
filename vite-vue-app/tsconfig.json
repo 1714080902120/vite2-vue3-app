@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "jsx": "preserve",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "lib": ["esnext", "dom"],
+    "paths": {
+      "@/*": ["*","src/*"],
+      "router/*": ["*", "src/router/*"],
+      "store/*": ["*", "src/store/*"],
+      "network/*": ["*", "src/network/*"],
+      "views/*": ["*", "src/views/*"],
+      "components/*": ["*", "src/components/*"],
+      "types/*": ["*", "src/types/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
+}
