@@ -433,7 +433,7 @@ vuex和vue-router的步骤相似
     const store = useStore()
     ```
 
-    这个时候会出现报错`Cannot find module 'store/index' or its corresponding type declarations.` 这个是vetur在vue3 + typescript中的bug
+    这个时候会出现报错`Cannot find module 'store/index' or its corresponding type declarations.` 这个是vetur在vue3 + typescript中的bug，在vue3项目中可以使用volar代替vetur。
 
 ## 4. 配置axios
 
