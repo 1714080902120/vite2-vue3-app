@@ -10,11 +10,6 @@
 
 3. 引入其他插件
 
-   - yarn add vue-router@next
-   - yarn add vuex@next
-   - yarn add axios
-   - yarn add mockjs
-
 4. 分别创建对应的文件夹
 
 5. 配置最简单的vite-config.ts
@@ -57,15 +52,17 @@
 
 官网：<a href="https://next.router.vuejs.org/zh/">vue-router</a>
 
-1. 进入router目录下创建index.ts文件
+1. yarn add vue-router@next
 
-2. 从vue-router导入需要的模块
+2. 进入router目录下创建index.ts文件
+
+3. 从vue-router导入需要的模块
 
    ```typescript
    import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
    ```
 
-3. 创建Router实例
+4. 创建Router实例
 
 ```typescript
 export default createRouter({
@@ -215,7 +212,7 @@ export default createRouter({
             "types/*": ["*", "src/types/*"]
          }
      ```
-     
+
      baseUrl和paths都需要配置，否则无法识别
 
 ## 3. 配置vuex
@@ -224,7 +221,9 @@ vuex和vue-router的步骤相似
 
 官网： <a href="https://next.vuex.vuejs.org/">vuex</a>
 
-1. 在store文件夹下创建(我个人习惯)：
+1. yarn add vuex@next
+
+2. 在store文件夹下创建(我个人习惯)：
 
    - index.ts
    - state.ts
@@ -233,7 +232,7 @@ vuex和vue-router的步骤相似
    - actions.ts
    - modules.ts
 
-2. index.ts中导入其它模块
+3. index.ts中导入其它模块
 
    ```typescript
    import { createStore } from 'vuex'
@@ -254,7 +253,7 @@ vuex和vue-router的步骤相似
    
    ```
 
-3. state.ts中创建并导出数据
+4. state.ts中创建并导出数据
 
    ```typescript
    import { People, State } from "types/store"
@@ -289,7 +288,7 @@ vuex和vue-router的步骤相似
    
    ```
 
-4. 创建types文件夹，这个文件夹用来存放所有的type/interface/class，让类型和变量分开，方便维护。types文件夹下创建store文件夹，新建index.d.ts文件（别忘了在vite.config.ts和tsconfig.ts中更新别名types）
+5. 创建types文件夹，这个文件夹用来存放所有的type/interface/class，让类型和变量分开，方便维护。types文件夹下创建store文件夹，新建index.d.ts文件（别忘了在vite.config.ts和tsconfig.ts中更新别名types）
 
    ```typescript
    export interface People {
@@ -304,7 +303,7 @@ vuex和vue-router的步骤相似
    }
    ```
 
-5. 创建getters.ts
+6. 创建getters.ts
 
    ```typescript
    import { GetterTree } from 'vuex'
@@ -319,7 +318,7 @@ vuex和vue-router的步骤相似
    export default getters
    ```
 
-6. 创建actions.ts
+7. 创建actions.ts
 
    ```typescript
    import { ActionTree } from 'vuex'
@@ -341,7 +340,7 @@ vuex和vue-router的步骤相似
    
    ```
 
-7. 创建mutations.ts
+8. 创建mutations.ts
 
    ```typescript
    import { MutationTree } from 'vuex'
@@ -358,7 +357,7 @@ vuex和vue-router的步骤相似
    
    ```
 
-8. 创建modules.ts
+9. 创建modules.ts
 
    ```typescript
    import { ModuleTree } from 'vuex'
@@ -370,48 +369,103 @@ vuex和vue-router的步骤相似
    export default modules
    ```
 
-9. 在main.ts中引入store并use
+10. 在index.ts中封装Inject方法，方便store全局调用
 
-   ```typescript
-   import { createApp } from 'vue'
-   import App from './App.vue'
-   import router from 'router/index'
-   import store from 'store/index'
-   
-   createApp(App).use(router).use(store).mount('#app')
-   ```
+    ```typescript
+    // InjectionKey
+    export const key: InjectionKey<Store<State>> = Symbol()
+    
+    // 定义自己的 `useStore` 组合式函数
+    export function useStore () {
+      return baseUseStore(key)
+    }
+    ```
 
-   
+    这里是官网给出的简化过后的方法
+
+11. 最终的index.ts
+
+    ```typescript
+    import { createStore, Store, useStore as baseUseStore } from 'vuex'
+    
+    import state from './state'
+    import mutations from './mutations'
+    import actions from './actions'
+    import getters from './getters'
+    import modules from './modules'
+    import { InjectionKey } from 'vue'
+    import { State } from 'types/store'
+    
+    // InjectionKey
+    export const key: InjectionKey<Store<State>> = Symbol()
+    
+    // 定义自己的 `useStore` 组合式函数
+    export function useStore () {
+      return baseUseStore(key)
+    }
+    
+    export default createStore({
+      state,
+      mutations,
+      actions,
+      getters,
+      modules
+    })
+    
+    ```
+
+12. 在main.ts中引入store并use
+
+    ```typescript
+    import { createApp } from 'vue'
+    import App from './App.vue'
+    import router from 'router/index'
+    import store， { key } from 'store/index'
+    
+    createApp(App).use(router).use(store, key).mount('#app')
+    ```
+
+12. 接着在具体页面直接引入store即可使用
+
+    ```typescript
+    import { useStore } from 'store/index'
+    
+    const store = useStore()
+    ```
+
+    这个时候会出现报错`Cannot find module 'store/index' or its corresponding type declarations.` 这个是vetur在vue3 + typescript中的bug
 
 ## 4. 配置axios
 
 Github：<a href="https://github.com/axios/axios">axios</a>
 
-1. 进入network文件夹下，创建request.ts文件
+1. yarn add axios
 
-2. 在根目录下创建.env.development文件，在文件中设置请求接口的REQUEST_BASE_URL
+2. 进入network文件夹下，创建request.ts文件
+
+3. 在根目录下创建.env文件，在文件中设置请求接口的VITE_REQUEST_BASE_URL
 
    ```
-   REQUEST_BASE_URL=http://localhost:4000/
+   VITE_REQUEST_BASE_URL=http://localhost:4000/
    ```
 
    后面会引入mockjs让axios能使用到
 
-3. 导入并创建实例
+4. 导入并创建实例
 
    ```typescript
    import axios, { AxiosInstance } from 'axios'
    import { REQUEST_TIMEOUT } from '@/common/constant'
    
    const instance: AxiosInstance = axios.create({
-     baseURL: import.meta.env.REQUEST_BASE_URL as string,
+     baseURL: import.meta.env.VITE_REQUEST_BASE_URL as string,
      timeout: REQUEST_TIMEOUT
    })
    ```
 
    其中REQUEST_TIMEOUT为3000
 
-4. 对请求和返回进行拦截
+5. 对请求和返回进行拦截
 
    ```typescript
        // 拦截
@@ -431,7 +485,7 @@ Github：<a href="https://github.com/axios/axios">axios</a>
        })
    ```
 
-5. 进行处理，用promise包裹，最终再返回
+6. 进行处理，用promise包裹，最终再返回
 
    ```typescript
    import axios, { AxiosInstance } from 'axios'
@@ -441,7 +495,7 @@ Github：<a href="https://github.com/axios/axios">axios</a>
    export function request (axiosConfig: any) {
      return new Promise((resolve, reject) => {
        const instance: AxiosInstance = axios.create({
-         baseURL: import.meta.env.REQUEST_BASE_URL as string,
+         baseURL: import.meta.env.VITE_REQUEST_BASE_URL as string,
          timeout: REQUEST_TIMEOUT
        })
      
@@ -472,13 +526,26 @@ Github：<a href="https://github.com/axios/axios">axios</a>
 
 官网：<a href="https://github.com/nuysoft/Mock/wiki">mockjs</a>
 
-1. 新建mock文件夹，进入mock文件夹创建index.ts作为入口文件，然后创建mock.ts用于封装mock
+1. yarn add mockjs vite-plugin-mock cross-env --dev
 
-2. 简单封装mock
+2. 配置mockjs，进入vite.config.ts文件中
+
+   ```typescript
+   import { viteMockServe } from 'vite-plugin-mock'
+   //然后在plugins中添加viteMockServe({})
+   plugins: [
+     vue(),
+     viteMockServe({})
+   ],
+   ```
+
+3. 新建mock文件夹，进入mock文件夹创建index.ts作为入口文件，然后创建mock.ts用于封装mock
+
+4. 简单封装mock
 
    ```typescript
    import { CreateMock } from "types/mock"
-   const Mock = require('mockjs')
+   import * as Mock from 'mockjs'
    
    // 这里的callback需要返回一个函数，函数参数为options，由mock传入自动执行函数
    export const createMock: CreateMock = (url: string | RegExp, callback: Function) => {
@@ -486,55 +553,64 @@ Github：<a href="https://github.com/axios/axios">axios</a>
    }
    ```
 
-3. 在mock文件夹下新建home.ts，用于实现具体返回数据
+5. 在mock文件夹下新建home.ts，用于实现具体返回数据
 
    ```typescript
    import { GetPeopleListOptions } from "types/mock";
+   import { queryParams } from "@/common/utils";
    import { createMock } from "./mock";
    
-   const getPeopleList = createMock('people-list', (Mock: any) => {
+   createMock(/.*/gi, (Mock: any) => {
      const Random = Mock.Random
      Random.extend({
-       sex: function (e: any) {
+       sex: function () {
          return this.pick([
            'male', 'female', 'middle'
          ])
        },
-       job: function (e: any) {
+       job: function () {
          return this.pick(['医生', '护士', '开发', '测试', '运营', '设计', '产品', '律师', '演员'])
        }
      })
-     return (options: GetPeopleListOptions) => {
-       const { limit = 20, skip = 0 } = options
+     return function (options: GetPeopleListOptions) {
+       const { limit = 20, skip = 0 } = queryParams(options?.url)
        const start = limit * skip
        const end = start + limit
-       return Mock.mock({
-         [`list|500`]: {
-           'name|string':'@name',
-           'sex|string': '@sex',
+       const data = Mock.mock({
+         'list|500': [{
+           'name':'@name',
+           'sex': '@sex',
            'age|20-35': 20,
-           'job|string': '@job'
-         }
-       }).slice(start, end)
+           'job': '@job'
+         }]
+       })
+       return data.list.slice(start, end)
      }
    })
    
-   export default {
-     getPeopleList
-   }
+   // 其中queryParams是我封装的一个方法，写的有点烂
+   export const queryParams = (url: string) => 
+     (url.indexOf('?') !== -1
+       && (url.split('?')[1].split('&')).reduce((prev, current) => {
+         const [attr, value] = current.split('=')
+         prev[attr] = value
+         return prev
+       }, {} as any))
    ```
 
-4. 在index.ts中导入home.ts导出的模块
+6. 在index.ts中导入home.ts
 
    ```typescript
-   import * as home from './home'
+   import './home'
    ```
 
-5. 在main.ts中引入才能起作用
+7. 在main.ts中引入才能起作用
 
    ```typescript
    require('@/mock/index')
    ```
+
+8. 这里其实mock引入插件后就能开箱即用，具体看下插件官网：<a href="https://www.npmjs.com/package/vite-plugin-mock">vite-plugin-mock</a>
 
 ## 7.重写vuex里的数据，改为通过接口请求
 
@@ -543,8 +619,8 @@ Github：<a href="https://github.com/axios/axios">axios</a>
    ```typescript
    import request from './request'
    
-   export function getPeopleList ({ limit = 20, skip = 0 }) {
-     return request({
+   export async function getPeopleList ({ limit = 20, skip = 0 }) {
+     return await request({
        url: '/people-list',
        method: 'get',
        params: {
@@ -649,9 +725,11 @@ yarn add autoprefixer --save
    .use(ElementPlus).
    ```
 
+## 10. 更新一波vue-devtool
 
+到<a href="https://github.com/vuejs/vue-devtools">官网</a>下载新的版本，然后install和build，然后找到packages文件夹下的shell-chrome文件夹，在chrome导入即可。
 
-## 10. 踩坑
+## 11. 踩坑
 
 1. vue-router不再支持*匹配，需要用特定的方法，链接：<a href="https://next.router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes">关于\*匹配的问题</a>
 
